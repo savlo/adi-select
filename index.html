@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Gift Selection</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            background-image:
+                linear-gradient(to bottom, rgba(1, 50, 32, 0.8), rgba(1, 50, 32, 0.6)),
+                url('https://images.unsplash.com/photo-1607262807149-dfd4c39320a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 95%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #013220;
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        .gift-message {
+            text-align: center;
+            color: #013220;
+            font-size: 20px;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            margin: 30px auto;
+            max-width: 80%;
+        }
+
+        .gift-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .gift-item {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f8f8f8;
+            position: relative;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .gift-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gift-item.disabled {
+            background-color: #d3d3d3;
+            pointer-events: none;
+        }
+
+        .gift-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .gift-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #013220;
+            margin-top: 15px;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #013220;
+            color: #FFFFFF;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 80%;
+            width: 400px;
+            text-align: center;
+        }
+
+        .popup.active {
+            display: block;
+            z-index: 9999;
+        }
+
+        .popup p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .popup button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #FFFFFF;
+            color: #013220;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .popup button:hover {
+            background-color: #F0F0F0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Christmas Gift Selection</h1>
+    <p class="gift-message">Choose your dream gift and let the holiday magic begin!</p>
+    <div class="gift-container">
+        <div class="gift-item" onclick="selectGift(this, 'Unfortunately, the stock was limited so we could not get the PS5 Pro.')">
+            <img src="https://www.flatpanels.dk/pictures/ps5proreveal_8_large.jpg" alt="PS5 Gift" class="gift-image">
+            <p class="gift-title">A brand new PS5 Pro</p>
+        </div>
+        <div class="gift-item" onclick="selectGift(this, 'Yeah... that would have been cool... but the restaurant is closed...')">
+            <img src="https://s41230.pcdn.co/wp-content/uploads/2018/10/livekindly_mushrooms-1024x576.jpg" alt="NOMA Dinner" class="gift-image">
+            <p class="gift-title">A dinner for 2 at NOMA</p>
+        </div>
+        <div class="gift-item" onclick="selectGift(this, 'Who does not want a vacation like this...')">
+            <img src="https://www.scottsmorraphotography.com/images/xl/Lanikai-Beach-Sunrise-Palm-Trees-Oahu-Hawaii.jpg" alt="Hawaii Trip" class="gift-image">
+            <p class="gift-title">A trip to Hawaii for 3</p>
+        </div>
+        <div id="fourth-gift" class="gift-item" style="display: none;" onclick="selectFourthGift()">
+            <img src="https://www.rotary.dk/sites/default/files/mobile-pay-logo.png" alt="Giftcard" class="gift-image">
+            <p class="gift-title">A giftcard for your new phone</p>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <p id="popup-message"></p>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+<script>
+    let selectedCount = 0;
+
+    function selectGift(element, message) {
+        if (element.classList.contains('disabled')) return;
+
+        document.getElementById('popup-message').textContent = message;
+        document.getElementById('popup').classList.add('active');
+
+        selectedCount++;
+        element.classList.add('disabled');
+
+        if (selectedCount === 3) {
+            document.getElementById('fourth-gift').style.display = 'block';
+        }
+    }
+
+    function selectFourthGift() {
+        document.getElementById('popup-message').textContent = 'Surprise! You\'ve unlocked a 300kr giftcard for your new phone!';
+        document.getElementById('popup').classList.add('active');
+
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    function closePopup() {
+        document.getElementById('popup').classList.remove('active');
+    }
+</script>
+</body>
+</html>
